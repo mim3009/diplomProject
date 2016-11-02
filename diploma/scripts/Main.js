@@ -94,7 +94,7 @@ function makeCalculations() {
                     massOfAllPoints += point.getMass();
                 }
             });
-            //clarify
+            //clarify about square and its angle to other points
             pressure = massOfAllPoints * g / s;
         }
         console.log(pressure);

@@ -89,6 +89,17 @@
     height: 95%;
 }
 
+.svgForGraph {
+  height: 500px;
+  width: 800px;
+}
+
+.svgForGraph .grid {
+  stroke: #ccc;
+  stroke-dasharray: 0;
+  stroke-width: 1;
+}
+
 .svgForDrawing {
     height: 100%;
     width: 70%;
@@ -96,18 +107,30 @@
     border: 1px solid black;
 }
 
-.svgForGraph {
-    height: 400px;
-    width: 700px;
-   
+.svgForGraph .labels.x-labels {
+  text-anchor: middle;
+}
+
+.svgForGraph .labels.y-labels {
+  text-anchor: end;
+}
+
+.data {
+  fill: red;
+  stroke-width: 1; 
+}
+
+.data:hover,
+.data:focus {
+  fill: yellow!important;
 }
 
 #graph {
-    left: 20%;
-    top: 20%;
+    left: 15%;
+    top: 12%;
     position: fixed;
-    width: 1200px;
-    height: 600px;
+    width: 800px;
+    height: 500px;
     background: #ddf;
     display: none;
     border: 1px solid black;
