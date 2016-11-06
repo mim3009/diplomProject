@@ -95,7 +95,7 @@
 }
 
 .svgForGraph .grid {
-  stroke: #ccc;
+  stroke: black;
   stroke-dasharray: 0;
   stroke-width: 1;
 }

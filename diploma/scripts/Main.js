@@ -1,4 +1,5 @@
-﻿//сделать графики, ложить все обьекты в локал сторедж
+﻿//доделать графики, ложить все обьекты в локал сторедж, сделать обработку остальных вычислений через воркер
+//замутить массив данных изменяя скорость и время по разным законам
 /*Block for start initialization of elements*/
 
 var pointsCollection = new Set();
@@ -9,6 +10,7 @@ var svgForGraph = document.getElementsByClassName("svgForGraph")[0];
 var svgForGraphOffset = svgForGraph.getBoundingClientRect();
 var s = 0.2;
 var g = 9.80665;
+var dataArray = new Array();
 
 //Test variables for visible coordinates output
 var xxx = document.getElementById("x");
@@ -64,45 +66,37 @@ var calculateButton = document.getElementById("calculate");
 calculateButton.addEventListener("click", makeCalculations, false);
 
 function makeCalculations() {
-    var speed = document.getElementById("speed").value;
-    var breakingTime = document.getElementById("breakingTime").value;
-    var maxLoadOnProp = document.getElementById("maxLoad").value;
-    var prop = undefined;
+    var speed = Number(document.getElementById("speed").value);
+    var breakingTime = Number(document.getElementById("breakingTime").value);
+    var maxLoadOnProp = Number(document.getElementById("maxLoad").value);
+    var distribution = undefined;
+
+    var radiosForDistribution = document.getElementsByName('radiosForDistribution');
+    for (var i = 0; i < radiosForDistribution.length; i++) {
+        if (radiosForDistribution[i].type == "radio" && radiosForDistribution[i].checked) {
+            distribution = radiosForDistribution[i].value;
+        }
+    }
+
+    var greenProp = undefined;
+    var redProp = undefined;
     pointsCollection.forEach(function (value) {
         if (value.getIsProp()) {
-            prop = value;
+            greenProp = value;
+        }
+        if (value.getColor() == "red") {
+            redProp = value;
         }
     });
     
-    if (prop && maxLoadOnProp) {
-        var pressure = 0;
+    if (greenProp && redProp && maxLoadOnProp) {
         if (speed && breakingTime) {
-            pointsCollection.forEach(function (point) {
-                if (point.getColor() == "red") {
-                    var angle = Math.atan((prop.getPosition().y - point.getPosition().y) / (point.getPosition().x - prop.getPosition().x)); //need to clarify this formula and all variations, also need to clarify about gravity
-                    var projection = point.getMass() * speed * Math.cos(angle);
-                    var power = projection / breakingTime;
-                    var momentOfStrength = power * getLineLength(point.getPosition().x, point.getPosition().y, prop.getPosition().x, prop.getPosition().y);
-                    pressure += momentOfStrength;
-                }
-            });
+            //fill the dataArray with the quantitative characteristics
+            findArrayOfQuantativeCharacteristics(speed, breakingTime, maxLoadOnProp, distribution, speed / breakingTime, greenProp, redProp);
         }
         else {
-            var massOfAllPoints = 0;
-            pointsCollection.forEach(function (point) {
-                if (point.getColor() == "red") {
-                    massOfAllPoints += point.getMass();
-                }
-            });
             //clarify about square and its angle to other points
-            pressure = massOfAllPoints * g / s;
-        }
-        console.log(pressure);
-        if (pressure > maxLoadOnProp) {
-            console.log("broken");
-        }
-        else {
-            console.log("withstood");
+            //pressure = massOfAllPoints * g / s;
         }
     }
     else {
@@ -110,6 +104,35 @@ function makeCalculations() {
     }
 }
 
+function findArrayOfQuantativeCharacteristics(speed, breakingTime, maxLoadOnProp, distribution, speedDown, greenProp, redProp) {
+    if (speed >= 0 && breakingTime >= 0) {
+        var summMomentOfStrength = 0;
+        pointsCollection.forEach(function (point) {
+            if (point.getColor() == "gray") {
+                //what about gravity in the main formula?
+                var angle = Math.atan(Math.abs(greenProp.getPosition().y - point.getPosition().y) / Math.abs(point.getPosition().x - greenProp.getPosition().x));
+                var projection = point.getMass() * speed * Math.cos(angle);
+                var power = projection / breakingTime;
+                var momentOfStrength = power * getLineLength(point.getPosition().x, point.getPosition().y, greenProp.getPosition().x, greenProp.getPosition().y);
+                summMomentOfStrength += momentOfStrength;
+            }
+        });
+        //n - a quantitative characteristic of the prop reaction
+        var n = summMomentOfStrength / getLineLength(greenProp.getPosition().x, greenProp.getPosition().y, redProp.getPosition().x, redProp.getPosition().y);
+        dataArray.push([n, speed, n > maxLoadOnProp]);
+
+        if (distribution == "Uniform") {
+            speed -= Math.randomUniform(speedDown, 2);
+        }
+        else if (distribution == "Normal") {
+            speed -= Math.randomGaussian(speedDown, 1);
+        }
+        else if (distribution == "Exponential") {
+            speed -= Math.randomExponential(speedDown);
+        }
+        findArrayOfQuantativeCharacteristics(speed, breakingTime - 1, maxLoadOnProp, distribution, speedDown, greenProp, redProp);
+    }
+}
 
 var displayGraphButton = document.getElementById("showGraph");
 var graph = document.getElementById("graph");
@@ -117,7 +140,7 @@ var graph = document.getElementById("graph");
 displayGraphButton.addEventListener("click", makeGraph, false);
 
 function makeGraph() {
-    var graph = new Graph(pointsCollection);
+    var graph = new Graph(dataArray);
     graph.create();
 }
 
@@ -125,7 +148,9 @@ var save = document.getElementById("save");
 save.addEventListener("click", saveDataToDB, false);
 
 function saveDataToDB() {
-    
+    console.log("Normal" + Math.randomGaussian(4, 1));
+    console.log("uniform" + Math.randomUniform(5, 2));
+    console.log("exp" + Math.randomExponential(5));
 }
 
 var load = document.getElementById("load");

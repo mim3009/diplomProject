@@ -1,8 +1,8 @@
-﻿function Graph(pointsCollection) {
-    var points = pointsCollection;
+﻿function Graph(dataArray) {
+    var dataArray = dataArray;
 
-    this.getPoints = function () {
-        return points;
+    this.getDataArray = function () {
+        return dataArray;
     }
 }
 
@@ -19,115 +19,74 @@ Graph.prototype.create = function () {
 }
 
 Graph.prototype.draw = function () {
-    var gForXCoordinateArrow = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    gForXCoordinateArrow.setAttribute("class", "grid x-grid");
-    gForXCoordinateArrow.setAttribute("id", "xGrid");
+    var dataArray = this.getDataArray();
+
+    var testData = [[90,192], [240,141], [388,179], [531,200], [677,104]];
 
     var lineX = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    lineX.setAttribute("x1", "90");
-    lineX.setAttribute("x2", "90");
-    lineX.setAttribute("y1", "5");
-    lineX.setAttribute("y2", "371");
-
-    var gForYCoordinateArrow = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    gForYCoordinateArrow.setAttribute("class", "grid y-grid");
-    gForYCoordinateArrow.setAttribute("id", "yGrid");
+    lineX.setAttribute("class", "grid y-grid");
+    lineX.setAttribute("id", "yGrid");
+    lineX.setAttribute("x1", "40");
+    lineX.setAttribute("x2", "770");
+    lineX.setAttribute("y1", "460");
+    lineX.setAttribute("y2", "460");
 
     var lineY = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    lineY.setAttribute("x1", "90");
-    lineY.setAttribute("x2", "705");
-    lineY.setAttribute("y1", "370");
-    lineY.setAttribute("y2", "370");
+    lineY.setAttribute("class", "grid x-grid");
+    lineY.setAttribute("id", "xGrid");
+    lineY.setAttribute("x1", "40");
+    lineY.setAttribute("x2", "40");
+    lineY.setAttribute("y1", "20");
+    lineY.setAttribute("y2", "460");
 
     var gForXLabels = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     gForXLabels.setAttribute("class", "labels x-labels");
 
-    var firstText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    firstText.setAttribute("x", "100");
-    firstText.setAttribute("y", "400");
-    var textNodeForFirstText = document.createTextNode("2008");
-    firstText.appendChild(textNodeForFirstText);
-
-    var secondText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    secondText.setAttribute("x", "246");
-    secondText.setAttribute("y", "400");
-    var textNodeForSecondText = document.createTextNode("2009");
-    secondText.appendChild(textNodeForSecondText);
+    var xAxisText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    xAxisText.setAttribute("x", "390");
+    xAxisText.setAttribute("y", "480");
+    var textNodeForXAxisText = document.createTextNode("time");
+    xAxisText.appendChild(textNodeForXAxisText);
 
     var gForYLabels = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     gForYLabels.setAttribute("class", "labels y-labels");
 
-    var firstTextY = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    firstTextY.setAttribute("x", "80");
-    firstTextY.setAttribute("y", "15");
-    var textNodeForFirstTextY = document.createTextNode("15");
-    firstTextY.appendChild(textNodeForFirstTextY);
-
-    var secondTextY = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    secondTextY.setAttribute("x", "80");
-    secondTextY.setAttribute("y", "131");
-    var textNodeForSecondTextY = document.createTextNode("10");
-    secondTextY.appendChild(textNodeForSecondTextY);
-
-    var polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-    polyline.setAttribute("fill", "none");
-    polyline.setAttribute("class", "chartLine");
-    polyline.setAttribute("stroke", "#0074d9");
-    polyline.setAttribute("stroke-width", "2");
-    polyline.setAttribute("points", "90,192 240,141 388,179 531,200 677,104");
+    var yAxisText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    yAxisText.setAttribute("x", "20");
+    yAxisText.setAttribute("y", "230");
+    yAxisText.setAttribute("transform", "translate(-205, 240) rotate(270)");
+    var textNodeForYAxisText = document.createTextNode("Pressure");
+    yAxisText.appendChild(textNodeForYAxisText);
 
     var gForCircles = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 
-    var circle1 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circle1.setAttribute("class", "data");
-    circle1.setAttribute("cx", "90");
-    circle1.setAttribute("cy", "192");
-    circle1.setAttribute("data-value", "7.2");
-    circle1.setAttribute("r", "5");
+    testData.forEach( function (item, i, arr) {
+        var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute("class", "data");
+        circle.setAttribute("cx", item[0]);
+        circle.setAttribute("cy", item[1]);
+        circle.setAttribute("data-value", "7.2");
+        circle.setAttribute("r", "5");
 
-    var circle2 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circle2.setAttribute("class", "data");
-    circle2.setAttribute("cx", "240");
-    circle2.setAttribute("cy", "141");
-    circle2.setAttribute("data-value", "8.1");
-    circle2.setAttribute("r", "5");
+        gForCircles.appendChild(circle);
+    });
 
-    var circle3 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circle3.setAttribute("class", "data");
-    circle3.setAttribute("cx", "388");
-    circle3.setAttribute("cy", "179");
-    circle3.setAttribute("data-value", "7.7");
-    circle3.setAttribute("r", "5");
+    for (let i = 0; i < testData.length-1; i++) {
+        var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute("style", "stroke: blue; stroke-width: 3; z-index: 1;");
+        line.setAttribute("x1", testData[i][0]);
+        line.setAttribute("y1", testData[i][1]);
+        line.setAttribute("x2", testData[i+1][0]);
+        line.setAttribute("y2", testData[i + 1][1]);
 
-    var circle4 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circle4.setAttribute("class", "data");
-    circle4.setAttribute("cx", "531");
-    circle4.setAttribute("cy", "200");
-    circle4.setAttribute("data-value", "6.8");
-    circle4.setAttribute("r", "5");
-
-    var circle5 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circle5.setAttribute("class", "data");
-    circle5.setAttribute("cx", "677");
-    circle5.setAttribute("cy", "104");
-    circle5.setAttribute("data-value", "6.7");
-    circle5.setAttribute("r", "5");
-
-    gForCircles.appendChild(circle1);
-    gForCircles.appendChild(circle2);
-    gForCircles.appendChild(circle3);
-    gForCircles.appendChild(circle4);
-    gForCircles.appendChild(circle5);
-    gForXLabels.appendChild(firstText);
-    gForXLabels.appendChild(secondText);
-    gForYLabels.appendChild(firstTextY);
-    gForYLabels.appendChild(secondTextY);
-    gForXCoordinateArrow.appendChild(lineX);
-    gForYCoordinateArrow.appendChild(lineY);
-    svgForGraph.appendChild(gForXCoordinateArrow);
-    svgForGraph.appendChild(gForYCoordinateArrow);
+        svgForGraph.appendChild(line);
+    }
+    
+    gForXLabels.appendChild(xAxisText);
+    gForYLabels.appendChild(yAxisText);
+    svgForGraph.appendChild(lineX);
+    svgForGraph.appendChild(lineY);
     svgForGraph.appendChild(gForXLabels);
     svgForGraph.appendChild(gForYLabels);
-    svgForGraph.appendChild(polyline);
     svgForGraph.appendChild(gForCircles);
 }
