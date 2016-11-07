@@ -1,5 +1,4 @@
 ﻿//доделать графики, ложить все обьекты в локал сторедж, сделать обработку остальных вычислений через воркер
-//замутить массив данных изменяя скорость и время по разным законам
 /*Block for start initialization of elements*/
 
 var pointsCollection = new Set();
@@ -11,6 +10,7 @@ var svgForGraphOffset = svgForGraph.getBoundingClientRect();
 var s = 0.2;
 var g = 9.80665;
 var dataArray = new Array();
+var time = undefined;
 
 //Test variables for visible coordinates output
 var xxx = document.getElementById("x");
@@ -67,7 +67,7 @@ calculateButton.addEventListener("click", makeCalculations, false);
 
 function makeCalculations() {
     var speed = Number(document.getElementById("speed").value);
-    var breakingTime = Number(document.getElementById("breakingTime").value);
+    time = Number(document.getElementById("breakingTime").value);
     var maxLoadOnProp = Number(document.getElementById("maxLoad").value);
     var distribution = undefined;
 
@@ -90,9 +90,10 @@ function makeCalculations() {
     });
     
     if (greenProp && redProp && maxLoadOnProp) {
-        if (speed && breakingTime) {
+        if (speed && time) {
             //fill the dataArray with the quantitative characteristics
-            findArrayOfQuantativeCharacteristics(speed, breakingTime, maxLoadOnProp, distribution, speed / breakingTime, greenProp, redProp);
+            dataArray = new Array();
+            findArrayOfQuantativeCharacteristics(speed, time, maxLoadOnProp, distribution, speed / time, greenProp, redProp);
         }
         else {
             //clarify about square and its angle to other points
@@ -105,22 +106,22 @@ function makeCalculations() {
 }
 
 function findArrayOfQuantativeCharacteristics(speed, breakingTime, maxLoadOnProp, distribution, speedDown, greenProp, redProp) {
-    if (speed >= 0 && breakingTime >= 0) {
+    if (speed >= 0 && breakingTime > 0) {
         var summMomentOfStrength = 0;
         pointsCollection.forEach(function (point) {
             if (point.getColor() == "gray") {
                 //what about gravity in the main formula?
                 var angle = Math.atan(Math.abs(greenProp.getPosition().y - point.getPosition().y) / Math.abs(point.getPosition().x - greenProp.getPosition().x));
                 var projection = point.getMass() * speed * Math.cos(angle);
-                var power = projection / breakingTime;
+                var power = projection / time;
                 var momentOfStrength = power * getLineLength(point.getPosition().x, point.getPosition().y, greenProp.getPosition().x, greenProp.getPosition().y);
                 summMomentOfStrength += momentOfStrength;
             }
         });
         //n - a quantitative characteristic of the prop reaction
         var n = summMomentOfStrength / getLineLength(greenProp.getPosition().x, greenProp.getPosition().y, redProp.getPosition().x, redProp.getPosition().y);
-        dataArray.push([n, speed, n > maxLoadOnProp]);
-
+        dataArray.push([breakingTime, speed, n, n > maxLoadOnProp]);
+        console.log(n);
         if (distribution == "Uniform") {
             speed -= Math.randomUniform(speedDown, 2);
         }
