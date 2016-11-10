@@ -115,9 +115,11 @@
   text-anchor: end;
 }
 
-.data {
-  fill: red;
-  stroke-width: 1; 
+.graphLine{
+    stroke: blue;
+    stroke-width: 3;
+    position: absolute;
+    z-index: 1;
 }
 
 .data:hover,
@@ -134,5 +136,5 @@
     background: #ddf;
     display: none;
     border: 1px solid black;
-    z-index: 1000;
+    z-index: 2;
 }

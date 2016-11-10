@@ -139,16 +139,8 @@ Point.prototype.changeColor = function () {
         this.setColor("red");
     }
     else if (this.getColor() == "red") {
-        var isPropDefinedAlready = false;
-        pointsCollection.forEach(function (value) {
-            if (value.getIsProp()) {
-                isPropDefinedAlready = true;
-            }
-        });
-        if (!isPropDefinedAlready) {
-            this.setColor("green");
-            this.setIsProp();
-        }
+        this.setColor("green");
+        this.setIsProp();
     }
     else {
         this.delete();

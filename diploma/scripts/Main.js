@@ -1,4 +1,4 @@
-﻿//доделать графики, ложить все обьекты в локал сторедж, сделать обработку остальных вычислений через воркер
+﻿//ложить все обьекты в локал сторедж, сделать обработку остальных вычислений через воркер, доводить скорость до нуля
 /*Block for start initialization of elements*/
 
 var pointsCollection = new Set();
@@ -80,16 +80,18 @@ function makeCalculations() {
 
     var greenProp = undefined;
     var redProp = undefined;
+    var countOfGreenProp = 0;
     pointsCollection.forEach(function (value) {
         if (value.getIsProp()) {
             greenProp = value;
+            countOfGreenProp++;
         }
         if (value.getColor() == "red") {
             redProp = value;
         }
     });
     
-    if (greenProp && redProp && maxLoadOnProp) {
+    if (greenProp && redProp && maxLoadOnProp && countOfGreenProp == 1) {
         if (speed && time) {
             //fill the dataArray with the quantitative characteristics
             dataArray = new Array();
