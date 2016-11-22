@@ -1,4 +1,5 @@
 ﻿function Point(pointRadius, pointMass) {
+    //radius and mass are 10 by default
     var radius = pointRadius;
     var mass = pointMass;
     var color = "gray";
@@ -20,7 +21,6 @@
         element.style.height = newRadius * 2 + "px";
         element.style.width = newRadius * 2 + "px";
         row.cells[3].innerHTML = newRadius;
-        this.setMass(newRadius);
     }
 
     this.getMass = function () {
@@ -29,7 +29,6 @@
 
     this.setMass = function (newMass) {
         mass = newMass;
-        row.cells[4].innerHTML = mass;
     }
 
     this.getColor = function () {
@@ -48,6 +47,7 @@
     }
 
     this.setPosition = function (x, y, transform = false) {
+        //add if
         element.style.left = x + "px";
         element.style.top = y + "px";
         if(!transform){
@@ -124,12 +124,24 @@ Point.prototype.create = function () {
     div.oncontextmenu = pointContext.changeColor;
 
     document.body.appendChild(div);
+
+    var inputForMass = document.createElement("input");
+    inputForMass.type = "text";
+    inputForMass.name = "mass";
+    inputForMass.class = "inputForData";
+    inputForMass.size = '1';
+    inputForMass.addEventListener("blur", changePointMass, false);
+
+    function changePointMass () {
+        pointContext.setMass(inputForMass.value);
+        console.log(pointContext.getMass());
+    }
    
     cell0.innerHTML = this.getPosition().x;
     cell1.innerHTML = this.getPosition().y;
     cell2.innerHTML = this.getColor();
     cell3.innerHTML = this.getRadius();
-    cell4.innerHTML = this.getMass();
+    cell4.appendChild(inputForMass);
     row.style.background = this.getColor();
 };
 

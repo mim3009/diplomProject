@@ -1,4 +1,5 @@
-﻿function Graph(dataArray) {
+﻿//переделать на Graph(x, xName, y, yName, [z]);
+function Graph(dataArray) {
     var dataArray = dataArray;
 
     this.getDataArray = function () {
@@ -51,7 +52,6 @@ Graph.prototype.draw = function () {
     var gForYLabels = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     gForYLabels.setAttribute("class", "labels y-labels");
 
-    //поставить по краям и тогда пропадет необходимость их ворочать
     var yAxisText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     yAxisText.setAttribute("x", "40");
     yAxisText.setAttribute("y", "13");

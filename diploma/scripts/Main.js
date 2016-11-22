@@ -1,5 +1,15 @@
-﻿//ложить все обьекты в локал сторедж, сделать обработку остальных вычислений через воркер, доводить скорость до нуля
+﻿//ложить все обьекты в локал сторедж, сделать обработку остальных вычислений через воркер, переносить точки между режимами через локал сторедж
 /*Block for start initialization of elements*/
+var mode = undefined;
+
+var radiosForMode = document.getElementsByName("radiosForMode");
+
+for (let i = 0; i < radiosForMode.length; i++) {
+    if (radiosForMode[i].checked) {
+        mode = radiosForMode[i].value;
+        break;
+    }
+}
 
 var pointsCollection = new Set();
 var linesCollection = new Set();
@@ -9,16 +19,16 @@ var svgForGraph = document.getElementsByClassName("svgForGraph")[0];
 var svgForGraphOffset = svgForGraph.getBoundingClientRect();
 var s = 0.2;
 var g = 9.80665;
-var dataArray = new Array();
-var time = undefined;
+var testResults = new Array();
 
 //Test variables for visible coordinates output
 var xxx = document.getElementById("x");
 var yyy = document.getElementById("y");
 
 (function () {
-    let inputsForTests = document.getElementById("inputsForTests");
-    inputsForTests.style.display = "none";
+    document.getElementById("inputsForTestTrain").style.display = "none";
+    document.getElementById("modes").style.display = "none";
+    document.getElementById("inputsForTestBeams").style.display = "none";
 
     document.addEventListener("mousemove", function (e) {
         xxx.innerHTML = event.clientX;
@@ -46,19 +56,47 @@ controlButtonInputs.addEventListener("click", inputsShow);
 
 function tableWithParametersShow() {
     let tablePoints = document.getElementById("tables");
-    let inputsForTests = document.getElementById("inputsForTests");
+    let inputsForTestTrain = document.getElementById("inputsForTestTrain");
+    let modes = document.getElementById("modes");
     tablePoints.style.display = "block";
-    inputsForTests.style.display = "none";
+    inputsForTestTrain.style.display = "none";
+    modes.style.display = "none";
 }
 
 function inputsShow() {
     let tablePoints = document.getElementById("tables");
-    let inputsForTests = document.getElementById("inputsForTests");
-    inputsForTests.style.display = "block";
+    let inputsForTestTrain = document.getElementById("inputsForTestTrain");
+    let modes = document.getElementById("modes");
+    modes.style.display = "block";
+    inputsForTestTrain.style.display = "block";
     tablePoints.style.display = "none";
 }
 
 /*End of control buttons handlers block*/
+
+/*Mode options*/
+
+var trainRadio = document.getElementById("train");
+var beamsRadio = document.getElementById("beams");
+
+trainRadio.addEventListener("change", useTrain, false);
+beamsRadio.addEventListener("change", useBeams, false);
+
+function useTrain() {
+    document.getElementsByClassName("svgForDrawing")[0].style.backgroundImage = "url('../images/image.jpg')";
+    mode = trainRadio.value;
+    document.getElementById("inputsForTestBeams").style.display = "none";
+    document.getElementById("inputsForTestTrain").style.display = "block";
+}
+
+function useBeams() {
+    document.getElementsByClassName("svgForDrawing")[0].style.backgroundImage = "url('../images/image2.jpg')";
+    mode = beamsRadio.value;
+    document.getElementById("inputsForTestTrain").style.display = "none";
+    document.getElementById("inputsForTestBeams").style.display = "block";
+}
+
+/*End of mode options*/
 
 /**/
 
@@ -67,20 +105,13 @@ calculateButton.addEventListener("click", makeCalculations, false);
 
 function makeCalculations() {
     var speed = Number(document.getElementById("speed").value);
-    time = Number(document.getElementById("breakingTime").value);
+    var time = Number(document.getElementById("breakingTime").value);
     var maxLoadOnProp = Number(document.getElementById("maxLoad").value);
-    var distribution = undefined;
-
-    var radiosForDistribution = document.getElementsByName('radiosForDistribution');
-    for (var i = 0; i < radiosForDistribution.length; i++) {
-        if (radiosForDistribution[i].type == "radio" && radiosForDistribution[i].checked) {
-            distribution = radiosForDistribution[i].value;
-        }
-    }
-
     var greenProp = undefined;
     var redProp = undefined;
     var countOfGreenProp = 0;
+    var countOfRedProp = 0;
+
     pointsCollection.forEach(function (value) {
         if (value.getIsProp()) {
             greenProp = value;
@@ -88,53 +119,56 @@ function makeCalculations() {
         }
         if (value.getColor() == "red") {
             redProp = value;
+            countOfRedProp++;
         }
     });
     
-    if (greenProp && redProp && maxLoadOnProp && countOfGreenProp == 1) {
-        if (speed && time) {
-            //fill the dataArray with the quantitative characteristics
-            dataArray = new Array();
-            findArrayOfQuantativeCharacteristics(speed, time, maxLoadOnProp, distribution, speed / time, greenProp, redProp);
+    if (mode == "train") {
+        if (greenProp && redProp && maxLoadOnProp && countOfGreenProp == 1 && countOfRedProp == 1) {
+            if (speed && time) {
+                //fill the dataArray with the quantitative characteristics
+                //dataArray = new Array();
+                var pressure = findQuantativeCharacteristic(speed, time, maxLoadOnProp, speed / time, greenProp, redProp);
+                document.getElementById("result").innerHTML = pressure;
+                test = {
+                    testSpeed: speed,
+                    testTime: time,
+                    testMaxLoad: maxLoadOnProp,
+                    testPressure: pressure
+                }
+                testResults.push(test);
+                console.log(testResults);
+            }
+            else {
+                console.log("speed or time are not defined");
+            }
         }
         else {
-            //clarify about square and its angle to other points
-            //pressure = massOfAllPoints * g / s;
+            console.log("greenProp or redProp or maxLoad are not defined or there are too many green or red points");
         }
     }
-    else {
-        console.log("Prop or maxLoad are not defined");
+    else if (mode == "beams") {
+        if (greenProp && redProp && countOfGreenProp == 3 && countOfRedProp == 1) {
+            //work with 1 red point as mass and 3 as loads
+        }
     }
 }
 
-function findArrayOfQuantativeCharacteristics(speed, breakingTime, maxLoadOnProp, distribution, speedDown, greenProp, redProp) {
-    if (speed >= 0 && breakingTime > 0) {
-        var summMomentOfStrength = 0;
-        pointsCollection.forEach(function (point) {
-            if (point.getColor() == "gray") {
-                //what about gravity in the main formula?
-                var angle = Math.atan(Math.abs(greenProp.getPosition().y - point.getPosition().y) / Math.abs(point.getPosition().x - greenProp.getPosition().x));
-                var projection = point.getMass() * speed * Math.cos(angle);
-                var power = projection / time;
-                var momentOfStrength = power * getLineLength(point.getPosition().x, point.getPosition().y, greenProp.getPosition().x, greenProp.getPosition().y);
-                summMomentOfStrength += momentOfStrength;
-            }
-        });
-        //n - a quantitative characteristic of the prop reaction
-        var n = summMomentOfStrength / getLineLength(greenProp.getPosition().x, greenProp.getPosition().y, redProp.getPosition().x, redProp.getPosition().y);
-        dataArray.push([breakingTime, speed, n, n > maxLoadOnProp]);
-        console.log(n);
-        if (distribution == "Uniform") {
-            speed -= Math.randomUniform(speedDown, 2);
+function findQuantativeCharacteristic(speed, breakingTime, maxLoadOnProp, speedDown, greenProp, redProp) {
+    var summMomentOfStrength = 0;
+    pointsCollection.forEach(function (point) {
+        if (point.getColor() == "gray") {
+            //what about gravity in the main formula?
+            var angle = Math.atan(Math.abs(greenProp.getPosition().y - point.getPosition().y) / Math.abs(point.getPosition().x - greenProp.getPosition().x));
+            var projection = point.getMass() * speed * Math.cos(angle);
+            var power = projection / breakingTime;
+            var momentOfStrength = power * getLineLength(point.getPosition().x, point.getPosition().y, greenProp.getPosition().x, greenProp.getPosition().y);
+            summMomentOfStrength += momentOfStrength;
         }
-        else if (distribution == "Normal") {
-            speed -= Math.randomGaussian(speedDown, 1);
-        }
-        else if (distribution == "Exponential") {
-            speed -= Math.randomExponential(speedDown);
-        }
-        findArrayOfQuantativeCharacteristics(speed, breakingTime - 1, maxLoadOnProp, distribution, speedDown, greenProp, redProp);
-    }
+    });
+    //n - a quantitative characteristic of the prop reaction
+    var n = summMomentOfStrength / getLineLength(greenProp.getPosition().x, greenProp.getPosition().y, redProp.getPosition().x, redProp.getPosition().y);
+    return n;
 }
 
 var displayGraphButton = document.getElementById("showGraph");
@@ -143,17 +177,38 @@ var graph = document.getElementById("graph");
 displayGraphButton.addEventListener("click", makeGraph, false);
 
 function makeGraph() {
-    var graph = new Graph(dataArray);
+    //change to x, xName, y, yName, [z]
+    var graph = new Graph(new Array());
     graph.create();
+}
+
+var increaseDistance = document.getElementById("increaseDistance");
+increaseDistance.addEventListener("click", increaseHandler, false);
+//there are no check for white line, if I'll have a time I have to add it
+function increaseHandler() {
+    pointsCollection.forEach(function (value) {
+        if (value.getColor() == "gray") {
+            value.setPosition(value.getPosition().x, value.getPosition().y - 1);
+        }
+    });
+}
+
+var decreaseDistance = document.getElementById("decreaseDistance");
+decreaseDistance.addEventListener("click", decreaseHandler, false);
+
+function decreaseHandler() {
+    pointsCollection.forEach(function (value) {
+        if (value.getColor() == "gray") {
+            value.setPosition(value.getPosition().x, value.getPosition().y + 1);
+        }
+    });
 }
 
 var save = document.getElementById("save");
 save.addEventListener("click", saveDataToDB, false);
 
 function saveDataToDB() {
-    console.log("Normal" + Math.randomGaussian(4, 1));
-    console.log("uniform" + Math.randomUniform(5, 2));
-    console.log("exp" + Math.randomExponential(5));
+    
 }
 
 var load = document.getElementById("load");
@@ -166,6 +221,11 @@ function loadDataFromDB() {
 
 /*Block for common functions*/
 
+/**
+    Function returns the angle between two points
+    center - the point against the angle will be searched
+*/
+
 function getAngle(center, point) {
     var x = point.x - center.x;
     var y = point.y - center.y;
@@ -174,6 +234,10 @@ function getAngle(center, point) {
     a = (x > 0) ? a + 90 : a + 270;
     return a;
 }
+
+/**
+    Function returns the Point object binded to the DOM element
+*/
 
 function findPointByElement(element) {
     let point = undefined;
@@ -184,6 +248,11 @@ function findPointByElement(element) {
     });
     return point;
 }
+
+/**
+    Calculation the points' tangent points. On the input we are giving the line and than get two points of this line.
+    Function calculates coordinates for 2 tangent points per point that it have got from the line's attributes.
+*/
 
 function findPolygonPointsCorrectPosition(line) {
     var lengthOfCathetusFirstTriangle = Math.sqrt(line.getLength() * line.getLength() - line.getPoints().firstPoint.getRadius() * line.getPoints().firstPoint.getRadius());
@@ -232,17 +301,13 @@ function findPolygonPointsCorrectPosition(line) {
     return result;
 }
 
+/**
+    Function returns the length of the line. On the input we give the 2 points (4 coordinates x1y1 and x2y2)
+*/
+
 function getLineLength(x1, y1, x2, y2) {
     var res = Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2));
     return res;
 }
 
-function get_angle(center, point) {
-    var x = point.x - center.x;
-    var y = point.y - center.y;
-    if (x == 0) return (y > 0) ? 180 : 0;
-    var a = Math.atan(y / x) * 180 / Math.PI;
-    a = (x > 0) ? a + 90 : a + 270;
-    return a;
-}
 /*End of common functions block*/

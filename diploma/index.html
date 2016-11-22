@@ -8,7 +8,7 @@
     <div id="controlPanel">
         <div id="rightMenuControlButtons">
             <div id="controlButtonTable">Show Tables</div><br><br>
-            <div id="controlButtonInputs">Show Inputs</div>
+            <div id="controlButtonInputs">Show Controls</div>
             <p id="x"></p> <p id="y"></p>
         </div>
         <div id="tables">
@@ -42,67 +42,75 @@
                 </div>
             </div>
         </div>
-        <div id="inputsForTests">
-            <form action="">
-                <table id="parametersTable">
-                    <tr>
-                        <td>
-                            Speed:
-                        </td>
-                        <td>
-                            <input id="speed" type="text"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            Breaking Time:
-                        </td>
-                        <td>
-                            <input id="breakingTime" type="text" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            Max load on prop:
-                        </td>
-                        <td>
-                            <input id="maxLoad" type="text" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            <input type="radio" name="radiosForDistribution" value="Uniform">Uniform
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            <input type="radio" name="radiosForDistribution" value="Normal">Normal
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            <input type="radio" name="radiosForDistribution" value="Exponential">Exponential
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="button" id="calculate" value="Calculate" />
-                        </td>
-                        <td>
-                            <input type="button" id="showGraph" value="Show Graph" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="button" id="save" value="Save" />
-                        </td>
-                        <td>
-                            <input type="button" id="load" value="Load" />
-                        </td>
-                    </tr>
-                </table>
-            </form>
-            <ul id="result"></ul>
+        <div id="modes">
+            <table id="modesTable">
+                <tr>
+                    <td>
+                        <input type="radio" name="radiosForMode" id="train" value="train" checked>Train
+                    </td>
+                    <td>
+                        <input type="radio" name="radiosForMode" id="beams" value="beams">Beams
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="button" id="calculate" value="Calculate" />
+                    </td>
+                    <td>
+                        <input type="button" id="showGraph" value="Show Graph" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="button" id="save" value="Save" />
+                    </td>
+                    <td>
+                        <input type="button" id="load" value="Load" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="inputsForTestTrain">
+            <table id="parametersTable">
+                <tr>
+                    <td>
+                        Speed:
+                    </td>
+                    <td>
+                        <input id="speed" type="text"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Breaking Time:
+                    </td>
+                    <td>
+                        <input id="breakingTime" type="text" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Max load on prop:
+                    </td>
+                    <td>
+                        <input id="maxLoad" type="text" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="button" id="increaseDistance" value="+" />
+                    </td>
+                    <td>
+                        <input type="button" id="decreaseDistance" value="-" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="inputsForTestBeams">
+
+        </div>
+        <div id="result">
+
         </div>
     </div>
     <div id="drawingBlock">
@@ -115,6 +123,5 @@
     <script src="scripts/Point.js"></script>
     <script src="scripts/Line.js"></script>
     <script src="/scripts/Graph.js"></script>
-    <script src="scripts/Distributions.js"></script>
 </body>
 </html>

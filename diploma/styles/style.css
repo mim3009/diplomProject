@@ -76,13 +76,22 @@
     width: 300px;
 }
 
-#inputsForTests {
+#inputsForTestTrain {
     width: 90%;
     float: right;
 }
 
-#result {
+#modes {
+    width: 90%;
+    float: right;
+}
 
+#modesTable {
+    width: 350px;
+}
+
+#modesTable tr td:first-child {
+    width: 167px;
 }
 
 #drawingBlock {

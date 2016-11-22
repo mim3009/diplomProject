@@ -95,6 +95,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="images\image.jpg" />
+    <Content Include="images\image2.jpg" />
     <Content Include="packages.config" />
     <Content Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -108,7 +109,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="index.html" />
-    <Content Include="scripts\Distributions.js" />
     <Content Include="scripts\Graph.js" />
     <Content Include="scripts\Line.js" />
     <Content Include="scripts\Main.js" />
