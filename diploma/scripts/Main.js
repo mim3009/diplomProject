@@ -1,5 +1,6 @@
 ﻿//ложить все обьекты в локал сторедж, сделать обработку остальных вычислений через воркер, переносить точки между режимами через локал сторедж
 /*Block for start initialization of elements*/
+//при переключении отображения таблиц при моде беамс отображаются поля которых не должно быть
 var mode = undefined;
 
 var radiosForMode = document.getElementsByName("radiosForMode");
@@ -15,11 +16,8 @@ var pointsCollection = new Set();
 var linesCollection = new Set();
 var svg = document.getElementsByClassName("svgForDrawing")[0];
 var svgOffset = svg.getBoundingClientRect();
-var svgForGraph = document.getElementsByClassName("svgForGraph")[0];
-var svgForGraphOffset = svgForGraph.getBoundingClientRect();
 var s = 0.2;
 var g = 9.80665;
-var testResults = new Array();
 
 //Test variables for visible coordinates output
 var xxx = document.getElementById("x");
@@ -104,40 +102,38 @@ var calculateButton = document.getElementById("calculate");
 calculateButton.addEventListener("click", makeCalculations, false);
 
 function makeCalculations() {
-    var speed = Number(document.getElementById("speed").value);
-    var time = Number(document.getElementById("breakingTime").value);
-    var maxLoadOnProp = Number(document.getElementById("maxLoad").value);
-    var greenProp = undefined;
-    var redProp = undefined;
     var countOfGreenProp = 0;
     var countOfRedProp = 0;
 
     pointsCollection.forEach(function (value) {
         if (value.getIsProp()) {
-            greenProp = value;
             countOfGreenProp++;
         }
         if (value.getColor() == "red") {
-            redProp = value;
             countOfRedProp++;
         }
     });
     
     if (mode == "train") {
-        if (greenProp && redProp && maxLoadOnProp && countOfGreenProp == 1 && countOfRedProp == 1) {
+        var speed = Number(document.getElementById("speed").value);
+        var time = Number(document.getElementById("breakingTime").value);
+        var maxLoadOnProp = Number(document.getElementById("maxLoad").value);
+        var greenProp = undefined;
+        var redProp = undefined;
+
+        pointsCollection.forEach(function (value) {
+            if (value.getIsProp()) {
+                greenProp = value;
+            }
+            if (value.getColor() == "red") {
+                redProp = value;
+            }
+        });
+
+        if (countOfGreenProp == 1 && countOfRedProp == 1) {
             if (speed && time) {
-                //fill the dataArray with the quantitative characteristics
-                //dataArray = new Array();
                 var pressure = findQuantativeCharacteristic(speed, time, maxLoadOnProp, speed / time, greenProp, redProp);
                 document.getElementById("result").innerHTML = pressure;
-                test = {
-                    testSpeed: speed,
-                    testTime: time,
-                    testMaxLoad: maxLoadOnProp,
-                    testPressure: pressure
-                }
-                testResults.push(test);
-                console.log(testResults);
             }
             else {
                 console.log("speed or time are not defined");
@@ -148,8 +144,21 @@ function makeCalculations() {
         }
     }
     else if (mode == "beams") {
-        if (greenProp && redProp && countOfGreenProp == 3 && countOfRedProp == 1) {
-            //work with 1 red point as mass and 3 as loads
+        if(countOfGreenProp == 3 && countOfRedProp == 1){
+            var greenProp = new Array();
+            var redProp = undefined;
+
+            pointsCollection.forEach(function (value) {
+                if (value.getIsProp()) {
+                    greenProp.push(value);
+                }
+                if (value.getColor() == "red") {
+                    redProp = value;
+                }
+            });
+        }
+        else {
+            console.log("countOfGreenProp != 3, countOfRedProp != 1");
         }
     }
 }
@@ -177,9 +186,41 @@ var graph = document.getElementById("graph");
 displayGraphButton.addEventListener("click", makeGraph, false);
 
 function makeGraph() {
-    //change to x, xName, y, yName, [z]
-    var graph = new Graph(new Array());
-    graph.create();
+    var myChart = undefined;
+    if (window.getComputedStyle(graph, null).getPropertyValue("display") == "none") {
+        var canvas = document.createElement("canvas");
+        canvas.id = "myChart";
+        graph.appendChild(canvas);
+        graph.style.display = "block";
+        displayGraphButton.value = "Close Graph";
+        var ctx = document.getElementById('myChart').getContext('2d');
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+                datasets: [{
+                    label: 'apples',
+                    data: [12, 19, 3, 17, 6, 3, 7],
+                    backgroundColor: "rgba(153,255,51,0.4)"
+                }, {
+                    label: 'oranges',
+                    data: [2, 29, 5, 5, 2, 3, 10],
+                    backgroundColor: "rgba(255,153,0,0.4)"
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+    else {
+        graph.style.display = "none";
+        displayGraphButton.value = "Show Graph";
+        while (graph.firstChild) {
+            graph.removeChild(graph.firstChild);
+        }
+    }
 }
 
 var increaseDistance = document.getElementById("increaseDistance");

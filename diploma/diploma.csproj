@@ -109,7 +109,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="index.html" />
-    <Content Include="scripts\Graph.js" />
+    <Content Include="scripts\Chart.js" />
     <Content Include="scripts\Line.js" />
     <Content Include="scripts\Main.js" />
     <Content Include="scripts\Point.js" />
