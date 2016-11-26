@@ -49,9 +49,6 @@ var yyy = document.getElementById("y");
 var controlButtonTable = document.getElementById("controlButtonTable");
 controlButtonTable.addEventListener("click", tableWithParametersShow);
 
-var controlButtonInputs = document.getElementById("controlButtonInputs");
-controlButtonInputs.addEventListener("click", inputsShow);
-
 function tableWithParametersShow() {
     let tablePoints = document.getElementById("tables");
     let inputsForTestTrain = document.getElementById("inputsForTestTrain");
@@ -61,12 +58,17 @@ function tableWithParametersShow() {
     modes.style.display = "none";
 }
 
+var controlButtonInputs = document.getElementById("controlButtonInputs");
+controlButtonInputs.addEventListener("click", inputsShow);
+
 function inputsShow() {
     let tablePoints = document.getElementById("tables");
     let inputsForTestTrain = document.getElementById("inputsForTestTrain");
     let modes = document.getElementById("modes");
     modes.style.display = "block";
-    inputsForTestTrain.style.display = "block";
+    if (mode == "train") {
+        inputsForTestTrain.style.display = "block";
+    }
     tablePoints.style.display = "none";
 }
 
