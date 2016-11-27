@@ -134,7 +134,6 @@ Point.prototype.create = function () {
 
     function changePointMass () {
         pointContext.setMass(inputForMass.value);
-        console.log(pointContext.getMass());
     }
    
     cell0.innerHTML = this.getPosition().x;

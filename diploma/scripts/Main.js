@@ -1,9 +1,7 @@
 ﻿//ложить все обьекты в локал сторедж, сделать обработку остальных вычислений через воркер, переносить точки между режимами через локал сторедж
 /*Block for start initialization of elements*/
-//при переключении отображения таблиц при моде беамс отображаются поля которых не должно быть
-var mode = undefined;
-
 var radiosForMode = document.getElementsByName("radiosForMode");
+var mode = undefined;
 
 for (let i = 0; i < radiosForMode.length; i++) {
     if (radiosForMode[i].checked) {
@@ -12,12 +10,15 @@ for (let i = 0; i < radiosForMode.length; i++) {
     }
 }
 
+var dataForGraphTrainMode = new Array();
+var dataForGraphBeamsMode = new Array();
 var pointsCollection = new Set();
 var linesCollection = new Set();
 var svg = document.getElementsByClassName("svgForDrawing")[0];
 var svgOffset = svg.getBoundingClientRect();
 var s = 0.2;
 var g = 9.80665;
+var borderColors = ["rgba(153,255,51,1)", "rgba(255, 0, 51, 1)", "rgba(0, 0, 255, 1)"];
 
 //Test variables for visible coordinates output
 var xxx = document.getElementById("x");
@@ -136,6 +137,7 @@ function makeCalculations() {
             if (speed && time) {
                 var pressure = findQuantativeCharacteristic(speed, time, maxLoadOnProp, speed / time, greenProp, redProp);
                 document.getElementById("result").innerHTML = pressure;
+                dataForGraphTrainMode.push([speed, pressure]);
             }
             else {
                 console.log("speed or time are not defined");
@@ -158,6 +160,7 @@ function makeCalculations() {
                     redProp = value;
                 }
             });
+            dataForGraphBeamsMode.push([redProp.getMass(), greenProp[0].getMass(), greenProp[1].getMass(), greenProp[2].getMass()]);
         }
         else {
             console.log("countOfGreenProp != 3, countOfRedProp != 1");
@@ -195,26 +198,16 @@ function makeGraph() {
         graph.appendChild(canvas);
         graph.style.display = "block";
         displayGraphButton.value = "Close Graph";
-        var ctx = document.getElementById('myChart').getContext('2d');
-        myChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
-                datasets: [{
-                    label: 'apples',
-                    data: [12, 19, 3, 17, 6, 3, 7],
-                    backgroundColor: "rgba(153,255,51,0.4)"
-                }, {
-                    label: 'oranges',
-                    data: [2, 29, 5, 5, 2, 3, 10],
-                    backgroundColor: "rgba(255,153,0,0.4)"
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
+        if (mode == "train") {
+            var data = convertParametersForGraph(dataForGraphTrainMode);
+            var dataset = convertDataToDataset(data);
+            drawGraph(data.label, dataset);
+        }
+        else if (mode == "beams") {
+            var data = convertParametersForGraph(dataForGraphBeamsMode);
+            var dataset = convertDataToDataset(data);
+            drawGraph(data.label, dataset);
+        }
     }
     else {
         graph.style.display = "none";
@@ -353,4 +346,67 @@ function getLineLength(x1, y1, x2, y2) {
     return res;
 }
 
+/**
+    Function draws the graph basis on the passed parameters
+    labelsForX - labels that will be displayed on the x axis
+    dataSet - object that can contain the following parameters:
+    [{
+        label: 'apples',
+        data: [120, 190, 30, 170, 60, 30, 70],
+        backgroundColor: "rgba(153,255,51,0.4)",
+        borderColor: "rgba(153,255,51,1)",
+        fill: false
+    }, {
+        label: 'oranges',
+        data: [20, 290, 50, 50, 20, 30, 100],
+        backgroundColor: "rgba(255,153,0,0.4)",
+        borderColor: "rgba(255,153,0,1)",
+        fill: false
+    }]
+*/
+
+function drawGraph(labelsForX, dataSet) {
+    var ctx = document.getElementById("myChart").getContext("2d");
+    myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labelsForX,
+            datasets: dataSet
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+
+function convertParametersForGraph(data) {
+    var dataObject = {
+        label: [],
+        pressure: []
+    };
+    for (var k = 0; k < data[0].length - 1; k++) {
+        dataObject.pressure[k] = new Array(data[0].length - 1);
+    }
+    for (var i = 0; i < data.length; i++) {
+        dataObject.label[i] = data[i][0];
+        for (var j = 0; j < data[i].length-1; j++) {
+            dataObject.pressure[j][i] = data[i][j+1];
+        }
+    }
+    return dataObject;
+}
+
+function convertDataToDataset(data) {
+    var dataset = [];
+    for (var i = 0; i < data.pressure.length; i++) {
+        dataset[i] = {
+            label: 'pressure' + i,
+            data: data.pressure[i],
+            borderColor: borderColors[i],
+            fill: false
+        };
+    }
+    return dataset;
+}
 /*End of common functions block*/
