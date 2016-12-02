@@ -1,5 +1,6 @@
 ﻿//ложить все обьекты в локал сторедж, сделать обработку остальных вычислений через воркер, переносить точки между режимами через локал сторедж
 /*Block for start initialization of elements*/
+//угол вправо считает
 var radiosForMode = document.getElementsByName("radiosForMode");
 var mode = undefined;
 
@@ -18,7 +19,7 @@ var svg = document.getElementsByClassName("svgForDrawing")[0];
 var svgOffset = svg.getBoundingClientRect();
 var s = 0.2;
 var g = 9.80665;
-var borderColors = ["rgba(153,255,51,1)", "rgba(255, 0, 51, 1)", "rgba(0, 0, 255, 1)"];
+var borderColors = ["rgba(153,255,51,1)", "rgba(255, 0, 51, 1)", "rgba(0, 0, 255, 1)", "rgba(255, 255, 255, 1)"];
 
 //Test variables for visible coordinates output
 var xxx = document.getElementById("x");
@@ -151,16 +152,56 @@ function makeCalculations() {
         if(countOfGreenProp == 3 && countOfRedProp == 1){
             var greenProp = new Array();
             var redProp = undefined;
+            var grayProp = new Array();
 
             pointsCollection.forEach(function (value) {
                 if (value.getIsProp()) {
                     greenProp.push(value);
                 }
-                if (value.getColor() == "red") {
+                else if (value.getColor() == "red") {
                     redProp = value;
                 }
+                else if (value.getColor() == "gray") {
+                    grayProp.push(value);
+                }
             });
-            dataForGraphBeamsMode.push([redProp.getMass(), greenProp[0].getMass(), greenProp[1].getMass(), greenProp[2].getMass()]);
+
+            //sorting the array to get points sequince from very left to very right
+            for (var i = 0; i < greenProp.length - 1; i++) {
+                for (var j = 0; j < greenProp.length - 1; j++) {
+                    if (greenProp[j].getPosition().x > greenProp[j + 1].getPosition().x) {
+                        var tmp = greenProp[j];
+                        greenProp[j] = greenProp[j + 1];
+                        greenProp[j + 1] = tmp;
+                    }
+                }
+            }
+
+            //sorting the array to get points sequince from very top to very bottom
+            for (var i = 0; i < grayProp.length - 1; i++) {
+                for (var j = 0; j < grayProp.length - 1; j++) {
+                    if (grayProp[j].getPosition().y > grayProp[j + 1].getPosition().y) {
+                        var tmp = grayProp[j];
+                        grayProp[j] = grayProp[j + 1];
+                        grayProp[j + 1] = tmp;
+                    }
+                }
+            }
+
+            var bc = getLineLength(greenProp[1].getPosition().x, greenProp[1].getPosition().y, greenProp[2].getPosition().x, greenProp[2].getPosition().y);
+            
+            do {
+                greenProp[1].setPosition(greenProp[1].getPosition().x + 1, greenProp[1].getPosition().y);
+                greenProp[2].setPosition(greenProp[2].getPosition().x, greenProp[2].getPosition().y + 1);
+            } while (greenProp[1].getPosition().x < grayProp[0].getPosition().x);
+
+            do {
+                var pressures = calculateBeamsPressure(greenProp, redProp, grayProp, bc);
+                dataForGraphBeamsMode.push([pressures.angle, pressures.grayPropFixingPressure, pressures.greenPropTopPressure, pressures.greenPropBottomPressure]);
+                greenProp[1].setPosition(greenProp[1].getPosition().x - 1, greenProp[1].getPosition().y);
+                greenProp[2].setPosition(greenProp[2].getPosition().x, greenProp[2].getPosition().y - 1);
+            } while (greenProp[2].getPosition().y > grayProp[0].getPosition().y);
+
         }
         else {
             console.log("countOfGreenProp != 3, countOfRedProp != 1");
@@ -172,7 +213,6 @@ function findQuantativeCharacteristic(speed, breakingTime, maxLoadOnProp, speedD
     var summMomentOfStrength = 0;
     pointsCollection.forEach(function (point) {
         if (point.getColor() == "gray") {
-            //what about gravity in the main formula?
             var angle = Math.atan(Math.abs(greenProp.getPosition().y - point.getPosition().y) / Math.abs(point.getPosition().x - greenProp.getPosition().x));
             var projection = point.getMass() * speed * Math.cos(angle);
             var power = projection / breakingTime;
@@ -380,6 +420,10 @@ function drawGraph(labelsForX, dataSet) {
     });
 }
 
+/**
+    Function for parameters convertation from the array to the object. First parameter of the array must be an labels, the following parameters will be parsed as pressure
+*/
+
 function convertParametersForGraph(data) {
     var dataObject = {
         label: [],
@@ -397,6 +441,10 @@ function convertParametersForGraph(data) {
     return dataObject;
 }
 
+/**
+    Function for convertation of the pressure to the dataset object
+*/
+
 function convertDataToDataset(data) {
     var dataset = [];
     for (var i = 0; i < data.pressure.length; i++) {
@@ -408,5 +456,42 @@ function convertDataToDataset(data) {
         };
     }
     return dataset;
+}
+
+function calculateBeamsPressure(greenProp, redProp, grayProp, bc) {
+    
+    var greenPropWithMass = greenProp[0];
+    var greenPropTop = greenProp[1];
+    var greenPropBottom = greenProp[2];
+    var grayPropFixing = grayProp[0];
+    var grayPropBottom = grayProp[grayProp.length - 1];
+
+    //returned object
+    var pressures = {
+        angle: undefined,
+        greenPropTopPressure: undefined,
+        greenPropBottomPressure: undefined,
+        grayPropFixingPressure: undefined,
+    };
+    var angle = 360 - getAngle(greenProp[2].getPosition(), greenProp[1].getPosition());
+    var s2 = greenPropTop.getRadius() * 10;
+    var s3 = greenPropBottom.getRadius();
+    var s4 = grayPropFixing.getRadius() / 10;
+    var l = getLineLength(greenPropWithMass.getPosition().x, greenPropWithMass.getPosition().y, grayPropFixing.getPosition().x, grayPropFixing.getPosition().y);
+    var l2 = getLineLength(greenPropTop.getPosition().x, greenPropTop.getPosition().y, grayPropFixing.getPosition().x, grayPropFixing.getPosition().y);
+    var l3 = getLineLength(greenPropBottom.getPosition().x, greenPropBottom.getPosition().y, grayPropFixing.getPosition().x, grayPropFixing.getPosition().y);
+    var f1 = redProp.getMass() * g;
+    var f2 = l * f1 / l2;
+    var f3 = l * f1 / l3;
+    var fy = (l - l2) * f1 / l2;
+    var fx = l2 * f2 / l3;
+    var fr = Math.sqrt(fy + fx);
+
+    pressures.angle = angle;
+    pressures.greenPropTopPressure = f2 / s2;
+    pressures.greenPropBottomPressure = f3 / s3;
+    pressures.grayPropFixingPressure = fr / s4;
+    
+    return pressures;
 }
 /*End of common functions block*/
