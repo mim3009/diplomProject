@@ -1,6 +1,6 @@
-﻿//ложить все обьекты в локал сторедж, сделать обработку остальных вычислений через воркер, переносить точки между режимами через локал сторедж
+﻿//Web storage, promisses and deffered objects
+
 /*Block for start initialization of elements*/
-//угол вправо считает
 var radiosForMode = document.getElementsByName("radiosForMode");
 var mode = undefined;
 
@@ -16,10 +16,23 @@ var dataForGraphBeamsMode = new Array();
 var pointsCollection = new Set();
 var linesCollection = new Set();
 var svg = document.getElementsByClassName("svgForDrawing")[0];
+
+/**
+svgOffset object (ClientRect) contains the following values:
+ClientRect {
+    bottom:
+    height:
+    left:
+    right:
+    top:
+    width:
+}
+*/
 var svgOffset = svg.getBoundingClientRect();
 var s = 0.2;
 var g = 9.80665;
-var borderColors = ["rgba(153,255,51,1)", "rgba(255, 0, 51, 1)", "rgba(0, 0, 255, 1)", "rgba(255, 255, 255, 1)"];
+var borderColors = ["rgba(0, 0, 0, 1)", "rgba(153,255,51,1)", "rgba(255, 0, 51, 1)", "rgba(0, 0, 255, 1)"];
+var valueGraphXAxis = undefined;
 
 //Test variables for visible coordinates output
 var xxx = document.getElementById("x");
@@ -119,6 +132,17 @@ function makeCalculations() {
     });
     
     if (mode == "train") {
+        var radiosForValueGraphXAxis = document.getElementsByName("radiosForValueGraphXAxis");
+        
+        if (!valueGraphXAxis) {
+            for (let i = 0; i < radiosForValueGraphXAxis.length; i++) {
+                if (radiosForValueGraphXAxis[i].checked) {
+                    valueGraphXAxis = radiosForValueGraphXAxis[i].value;
+                    break;
+                }
+            }
+        }
+        
         var speed = Number(document.getElementById("speed").value);
         var time = Number(document.getElementById("breakingTime").value);
         var maxLoadOnProp = Number(document.getElementById("maxLoad").value);
@@ -136,9 +160,28 @@ function makeCalculations() {
 
         if (countOfGreenProp == 1 && countOfRedProp == 1) {
             if (speed && time) {
-                var pressure = findQuantativeCharacteristic(speed, time, maxLoadOnProp, speed / time, greenProp, redProp);
-                document.getElementById("result").innerHTML = pressure;
-                dataForGraphTrainMode.push([speed, pressure]);
+                var promise = new Promise((resolve, reject) => {
+                    resolve(findQuantativeCharacteristic(speed, time, maxLoadOnProp, speed / time, greenProp, redProp));
+                });
+
+                promise.then(
+                    result => {
+                        document.getElementById("result").innerHTML = result;
+                        if (valueGraphXAxis == "speed") {
+                            dataForGraphTrainMode.push([speed, result]);
+                        }
+                        else if (valueGraphXAxis == "time") {
+                            dataForGraphTrainMode.push([time, result]);
+                        }
+                        else {
+                            dataForGraphTrainMode.push([speed, result]);
+                        }
+                    },
+                    error => {
+                        alert(error);
+                    }
+                );
+
             }
             else {
                 console.log("speed or time are not defined");
@@ -189,7 +232,7 @@ function makeCalculations() {
             }
 
             var bc = getLineLength(greenProp[1].getPosition().x, greenProp[1].getPosition().y, greenProp[2].getPosition().x, greenProp[2].getPosition().y);
-            
+
             do {
                 greenProp[1].setPosition(greenProp[1].getPosition().x + 1, greenProp[1].getPosition().y);
                 greenProp[2].setPosition(greenProp[2].getPosition().x, greenProp[2].getPosition().y + 1);
@@ -197,7 +240,8 @@ function makeCalculations() {
 
             do {
                 var pressures = calculateBeamsPressure(greenProp, redProp, grayProp, bc);
-                dataForGraphBeamsMode.push([pressures.angle, pressures.grayPropFixingPressure, pressures.greenPropTopPressure, pressures.greenPropBottomPressure]);
+                var pressuresAVG = (pressures.grayPropFixingPressure + pressures.greenPropTopPressure + pressures.greenPropBottomPressure) / 3;
+                dataForGraphBeamsMode.push([parseInt(pressures.angle), pressuresAVG, pressures.grayPropFixingPressure, pressures.greenPropTopPressure, pressures.greenPropBottomPressure]);
                 greenProp[1].setPosition(greenProp[1].getPosition().x - 1, greenProp[1].getPosition().y);
                 greenProp[2].setPosition(greenProp[2].getPosition().x, greenProp[2].getPosition().y - 1);
             } while (greenProp[2].getPosition().y > grayProp[0].getPosition().y);
@@ -207,22 +251,6 @@ function makeCalculations() {
             console.log("countOfGreenProp != 3, countOfRedProp != 1");
         }
     }
-}
-
-function findQuantativeCharacteristic(speed, breakingTime, maxLoadOnProp, speedDown, greenProp, redProp) {
-    var summMomentOfStrength = 0;
-    pointsCollection.forEach(function (point) {
-        if (point.getColor() == "gray") {
-            var angle = Math.atan(Math.abs(greenProp.getPosition().y - point.getPosition().y) / Math.abs(point.getPosition().x - greenProp.getPosition().x));
-            var projection = point.getMass() * speed * Math.cos(angle);
-            var power = projection / breakingTime;
-            var momentOfStrength = power * getLineLength(point.getPosition().x, point.getPosition().y, greenProp.getPosition().x, greenProp.getPosition().y);
-            summMomentOfStrength += momentOfStrength;
-        }
-    });
-    //n - a quantitative characteristic of the prop reaction
-    var n = summMomentOfStrength / getLineLength(greenProp.getPosition().x, greenProp.getPosition().y, redProp.getPosition().x, redProp.getPosition().y);
-    return n;
 }
 
 var displayGraphButton = document.getElementById("showGraph");
@@ -458,6 +486,26 @@ function convertDataToDataset(data) {
     return dataset;
 }
 
+/**
+    Function that find the the QuantativeCharacteristic
+*/
+
+function findQuantativeCharacteristic(speed, breakingTime, maxLoadOnProp, speedDown, greenProp, redProp) {
+    var summMomentOfStrength = 0;
+    pointsCollection.forEach(function (point) {
+        if (point.getColor() == "gray") {
+            var angle = Math.atan(Math.abs(greenProp.getPosition().y - point.getPosition().y) / Math.abs(point.getPosition().x - greenProp.getPosition().x));
+            var projection = point.getMass() * speed * Math.cos(angle);
+            var power = projection / breakingTime;
+            var momentOfStrength = power * getLineLength(point.getPosition().x, point.getPosition().y, greenProp.getPosition().x, greenProp.getPosition().y);
+            summMomentOfStrength += momentOfStrength;
+        }
+    });
+    //n - a quantitative characteristic of the prop reaction
+    var n = summMomentOfStrength / getLineLength(greenProp.getPosition().x, greenProp.getPosition().y, redProp.getPosition().x, redProp.getPosition().y);
+    return n;
+}
+
 function calculateBeamsPressure(greenProp, redProp, grayProp, bc) {
     
     var greenPropWithMass = greenProp[0];
@@ -473,6 +521,7 @@ function calculateBeamsPressure(greenProp, redProp, grayProp, bc) {
         greenPropBottomPressure: undefined,
         grayPropFixingPressure: undefined,
     };
+
     var angle = 360 - getAngle(greenProp[2].getPosition(), greenProp[1].getPosition());
     var s2 = greenPropTop.getRadius() * 10;
     var s3 = greenPropBottom.getRadius();

@@ -250,6 +250,7 @@ Point.prototype.drag = function () {
     var countFixedLines = 0;
     var fixedLine = undefined;
     var lengthOfFixedLine = undefined;
+
     pointContext.getBindedLines().forEach(function (line) {
         if (line.getIsFixed()) {
             fixedLine = line;
@@ -263,7 +264,18 @@ Point.prototype.drag = function () {
 
     function moveHandler(){
         if (countFixedLines == 0) {
-            pointContext.setPosition(event.clientX - deltaX + pointContext.getRadius(), event.clientY - deltaY + pointContext.getRadius());
+            var x = event.clientX - deltaX + pointContext.getRadius();
+            var y = event.clientY - deltaY + pointContext.getRadius();
+            
+            if (x < parseInt(svgOffset.left) + pointContext.getRadius() || x > parseInt(svgOffset.right) - pointContext.getRadius() + parseInt(svgOffset.left)) {
+                x = pointContext.getPosition().x;
+            }
+            
+            if (y < parseInt(svgOffset.top) + pointContext.getRadius() || y > parseInt(svgOffset.bottom) - pointContext.getRadius()) {
+                y = pointContext.getPosition().y;
+            }
+
+            pointContext.setPosition(x, y);
         }
         else if (countFixedLines == 1) {
             var secondPoint = fixedLine.getSecondPoint(pointContext);
