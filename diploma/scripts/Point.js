@@ -1,11 +1,11 @@
-﻿function Point(pointRadius, pointMass) {
+﻿function Point(pointRadius, pointMass, posX, posY, col) {
     //radius and mass are 10 by default
     var radius = pointRadius;
     var mass = pointMass;
-    var color = "gray";
+    var color = col || "gray";
     var position = {
-        x : undefined,
-        y : undefined
+        x : posX,
+        y : posY
     };
     var element = undefined;
     var row = undefined;
@@ -108,7 +108,18 @@ Point.prototype.create = function () {
     var cell4 = row.insertCell(4);
     this.setRow(row);
     this.setElement(div);
-    this.setPosition(event.pageX, event.pageY);
+
+    if (this.getColor() == "green") {
+        this.setIsProp();
+    }
+
+    if (this.getPosition().x) {
+        this.setPosition(this.getPosition().x, this.getPosition().y);
+    }
+    else {
+        this.setPosition(event.pageX, event.pageY);
+    }
+
     div.className = "movedElement";
     div.style.background = this.getColor();
     div.style.position = "absolute";

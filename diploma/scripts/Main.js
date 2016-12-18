@@ -1,4 +1,4 @@
-﻿//Web storage, promisses and deffered objects
+﻿//Web storage, promisses and deffered objects сохранять только то что захочу кнопочка, добавить в create проверку не только на слиентх но и на координаты
 
 /*Block for start initialization of elements*/
 var radiosForMode = document.getElementsByName("radiosForMode");
@@ -50,6 +50,7 @@ var yyy = document.getElementById("y");
 
     svg.addEventListener('click', pointCreation, false);
 
+    //this method needs an enchansement as it dublicates point repair in the Database.js
     function pointCreation() {
         var point = new Point(10, 10);
         pointsCollection.add(point);
@@ -309,17 +310,32 @@ function decreaseHandler() {
 }
 
 var save = document.getElementById("save");
-save.addEventListener("click", saveDataToDB, false);
+save.addEventListener("click", saveSession, false);
 
-function saveDataToDB() {
-    
+function saveSession() {
+    saveSessionTODB();
 }
 
 var load = document.getElementById("load");
-load.addEventListener("click", loadDataFromDB, false);
+load.addEventListener("click", readData, false);
 
-function loadDataFromDB() {
+function readData() {
+    readDataFromDB();
+}
 
+var removeSession = document.getElementById("removeSession");
+removeSession.addEventListener("click", removeSession, false);
+
+function removeSession() {
+    removeSessionFromDB();
+}
+
+var clean = document.getElementById("clean");
+clean.addEventListener("click", cleanData, false);
+
+function cleanData() {
+    dataForGraphTrainMode = new Array();
+    dataForGraphBeamsMode = new Array();
 }
 /**/
 
@@ -347,6 +363,20 @@ function findPointByElement(element) {
     let point = undefined;
     pointsCollection.forEach(function (value) {
         if (value.getElement() === element) {
+            point = value;
+        }
+    });
+    return point;
+}
+
+/**
+    Function returns the Point object binded to the coordinates [x, y]
+*/
+
+function findPointByCoordinates(x, y) {
+    let point = undefined;
+    pointsCollection.forEach(function (value) {
+        if (value.getPosition().x === x && value.getPosition().y === y) {
             point = value;
         }
     });

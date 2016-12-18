@@ -62,10 +62,26 @@
                 </tr>
                 <tr>
                     <td>
+                        <p>Session name</p>
+                    </td>
+                    <td>
+                        <input type="text" id="sessionName"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
                         <input type="button" id="save" value="Save" />
                     </td>
                     <td>
                         <input type="button" id="load" value="Load" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="button" id="clean" value="Clean data" />
+                    </td>
+                    <td>
+                        <input type="button" id="removeSession" value="Remove session" />
                     </td>
                 </tr>
             </table>
@@ -106,10 +122,10 @@
                 </tr>
                 <tr>
                     <td>
-                        <input type="radio" name="radiosForValueGraphXAxis" id="speed" value="speed" checked>Speed
+                        <input type="radio" name="radiosForValueGraphXAxis" id="speedRadio" value="speed" checked>Speed
                     </td>
                     <td>
-                        <input type="radio" name="radiosForValueGraphXAxis" id="time" value="time">Time
+                        <input type="radio" name="radiosForValueGraphXAxis" id="timeRadio" value="time">Time
                     </td>
                 </tr>
             </table>
@@ -126,6 +142,7 @@
     </div>
     <div id="graph"></div>
     <script src="scripts/Main.js"></script>
+    <script src="scripts/Database.js"></script>
     <script src="scripts/Point.js"></script>
     <script src="scripts/Line.js"></script>
     <script src="scripts/Chart.js"></script>

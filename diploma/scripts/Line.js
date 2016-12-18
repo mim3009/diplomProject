@@ -1,4 +1,4 @@
-﻿function Line(point1, point2) {
+﻿function Line(point1, point2, col) {
     var points = {
         firstPoint : point1,
         secondPoint : point2
@@ -14,7 +14,7 @@
     }
 
     var row = undefined;
-    var color = undefined;
+    var color = col;
     var polygon = undefined;
     var length = undefined;
     var isFixed = false;
@@ -122,7 +122,16 @@ Line.prototype.create = function () {
         lineContext.setPolygon(polygon);
         lineContext.setRow(row);
         lineContext.setCoordinates(lineContext.getPoints().firstPoint.getPosition().x, lineContext.getPoints().firstPoint.getPosition().y, lineContext.getPoints().secondPoint.getPosition().x, lineContext.getPoints().secondPoint.getPosition().y);
-        lineContext.setColor("red");
+
+        if (!lineContext.getColor()) {
+            lineContext.setColor("red");
+        }
+        else {
+            lineContext.setColor(lineContext.getColor());
+            if (lineContext.getColor() == "white") {
+                lineContext.setIsFixed(true);
+            }
+        }
 
         lineContext.changeColor = lineContext.changeColor.bind(lineContext);
         lineContext.getElement().oncontextmenu = lineContext.changeColor;
