@@ -13,6 +13,7 @@ request.onerror = function (event) {
 
 request.onsuccess = function (event) {
     db = request.result;
+    readAllDataFromDB();
 };
 
 request.onupgradeneeded = function (event) {
@@ -92,14 +93,16 @@ function readDataFromDB() {
 
 function readAllDataFromDB() {
     var objectStore = db.transaction("objectCollection").objectStore("objectCollection");
-
+    var options = undefined;
     objectStore.openCursor().onsuccess = function (event) {
         var cursor = event.target.result;
 
         if (cursor) {
-            //make a select
-            console.log(cursor.key);
+            options += '<option value="' + cursor.key + '" />';
             cursor.continue();
+        }
+        else {
+            document.getElementById('sessions').innerHTML = options;
         }
 
     };
