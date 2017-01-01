@@ -7,8 +7,8 @@
         x : posX,
         y : posY
     };
-    var element = undefined;
-    var row = undefined;
+    var element = null;
+    var row = null;
     var isProp = false;
     var bindedLines = new Set();
 
@@ -47,7 +47,6 @@
     }
 
     this.setPosition = function (x, y, transform = false) {
-        //add if
         element.style.left = x + "px";
         element.style.top = y + "px";
         if(!transform){
@@ -259,8 +258,8 @@ Point.prototype.drag = function () {
     var deltaY = startY - origY;
 
     var countFixedLines = 0;
-    var fixedLine = undefined;
-    var lengthOfFixedLine = undefined;
+    var fixedLine = null;
+    var lengthOfFixedLine = null;
 
     pointContext.getBindedLines().forEach(function (line) {
         if (line.getIsFixed()) {

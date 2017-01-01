@@ -4,19 +4,19 @@
         secondPoint : point2
     };
 
-    var element = undefined;
+    var element = null;
 
     var coordinates = {
-        x1: undefined,
-        x2: undefined,
-        y1: undefined,
-        y2: undefined
+        x1: null,
+        x2: null,
+        y1: null,
+        y2: null
     }
 
-    var row = undefined;
+    var row = null;
     var color = col;
-    var polygon = undefined;
-    var length = undefined;
+    var polygon = null;
+    var length = null;
     var isFixed = false;
 
     this.getPoints = function () {
@@ -165,7 +165,7 @@ Line.prototype.delete = function () {
 }
 
 Line.prototype.getSecondPoint = function (point) {
-    var secondPoint = undefined;
+    var secondPoint = null;
     var points = this.getPoints();
     if (points.firstPoint != point) {
         secondPoint = points.firstPoint;

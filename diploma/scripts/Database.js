@@ -93,7 +93,7 @@ function readDataFromDB() {
 
 function readAllDataFromDB() {
     var objectStore = db.transaction("objectCollection").objectStore("objectCollection");
-    var options = undefined;
+    var options = null;
     objectStore.openCursor().onsuccess = function (event) {
         var cursor = event.target.result;
 
@@ -110,9 +110,9 @@ function readAllDataFromDB() {
 
 function saveSessionTODB() {
     var sessionName = document.getElementById("sessionName").value;
-    var points = new Array();
-    var lines = new Array();
-    var radiosForValueGraphXAxisActive = undefined;
+    var points = [];
+    var lines = [];
+    var radiosForValueGraphXAxisActive = null;
     var radiosForValueGraphXAxis = document.getElementsByName("radiosForValueGraphXAxis");
     for (let i = 0; i < radiosForValueGraphXAxis.length; i++) {
         if (radiosForValueGraphXAxis[i].checked) {

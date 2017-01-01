@@ -2,150 +2,162 @@
 <html>
 <head>
     <title>Diploma</title>
-    <link rel="stylesheet" href="styles/style.css"/>
+    <link rel="stylesheet" href="styles/style.css" />
+    <script src="scripts/Main.js" defer></script>
+    <script src="scripts/Database.js" defer></script>
+    <script src="scripts/Point.js" defer></script>
+    <script src="scripts/Line.js" defer></script>
+    <script src="scripts/Chart.js" defer></script>
 </head>
 <body>
-    <div id="controlPanel">
-        <div id="rightMenuControlButtons">
-            <div id="controlButtonTable">Show Tables</div><br><br>
-            <div id="controlButtonInputs">Show Controls</div>
-            <p id="x"></p> <p id="y"></p>
+    <div class="main">
+        <div id="drawingBlock">
+            <svg class="svgForDrawing" xmlns="http://www.w3.org/2000/svg" version="1.1"></svg>
         </div>
-        <div id="tables">
-            <div>
-                <table id="pointsTableHeader">
-                    <tr>
-                        <th>x1</th>
-                        <th>y1</th>
-                        <th>c</th>
-                        <th>r</th>
-                        <th>m</th>
-                    </tr>
-                </table>
-                <div id="pointsTableWrapper">
-                    <table id="pointsTable"></table>
+        <div id="controlPanel">
+            <div id="rightMenuControlButtons">
+                <div id="controlButtonTable" class="active"><span>Show Tables</span></div><br />
+                <div id="controlButtonInputs"><span>Show Controls</span></div>
+                <p id="x"></p> <p id="y"></p>
+            </div>
+            <div id="tables">
+                <div>
+                    <table id="pointsTableHeader">
+                        <tr>
+                            <th>x1</th>
+                            <th>y1</th>
+                            <th>c</th>
+                            <th>r</th>
+                            <th>m</th>
+                        </tr>
+                    </table>
+                    <div id="pointsTableWrapper">
+                        <table id="pointsTable"></table>
+                    </div>
+                </div>
+                <br />
+                <div>
+                    <table id="linesTableHeader">
+                        <tr>
+                            <th>x1</th>
+                            <th>y1</th>
+                            <th>x2</th>
+                            <th>y2</th>
+                            <th>c</th>
+                        </tr>
+                    </table>
+                    <div id="linesTableWrapper">
+                        <table id="linesTable"></table>
+                    </div>
                 </div>
             </div>
-            <br />
-            <div>
-                <table id="linesTableHeader">
+            <div id="modes">
+                <table id="modesTable">
                     <tr>
-                        <th>x1</th>
-                        <th>y1</th>
-                        <th>x2</th>
-                        <th>y2</th>
-                        <th>c</th>
+                        <td>
+                            <input type="radio" name="radiosForMode" id="train" value="train" checked>
+                            <label for="train">Train</label>
+                        </td>
+                        <td>
+                            <input type="radio" name="radiosForMode" id="beams" value="beams">
+                            <label for="beams">Beams</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="button" id="calculate" value="Calculate" />
+                        </td>
+                        <td>
+                            <input type="button" id="showGraph" value="Show Graph" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p>Session name</p>
+                        </td>
+                        <td>
+                            <input list="sessions" id="sessionName" />
+                            <datalist id="sessions"></datalist>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="button" id="save" value="Save" />
+                        </td>
+                        <td>
+                            <input type="button" id="load" value="Load" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="button" id="clean" value="Clean data" />
+                        </td>
+                        <td>
+                            <input type="button" id="removeSession" value="Remove session" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="button" id="removeLastResult" value="Remove last Result" />
+                        </td>
+                        <td></td>
                     </tr>
                 </table>
-                <div id="linesTableWrapper">
-                    <table id="linesTable"></table>
-                </div>
+            </div>
+            <div id="inputsForTestTrain">
+                <table id="parametersTable">
+                    <tr>
+                        <td>
+                            Speed:
+                        </td>
+                        <td>
+                            <input id="speed" type="text" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Breaking Time:
+                        </td>
+                        <td>
+                            <input id="breakingTime" type="text" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Max load on prop:
+                        </td>
+                        <td>
+                            <input id="maxLoad" type="text" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="button" id="increaseDistance" value="increase distance to prop" />
+                        </td>
+                        <td>
+                            <input type="button" id="decreaseDistance" value="decrease distance to prop" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="radio" name="radiosForValueGraphXAxis" id="speedRadio" value="speed" checked>
+                            <label for="speedRadio">Speed</label>
+                        </td>
+                        <td>
+                            <input type="radio" name="radiosForValueGraphXAxis" id="timeRadio" value="time">
+                            <label for="timeRadio">Time</label>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div id="inputsForTestBeams">
+
+            </div>
+            <div id="result">
+
             </div>
         </div>
-        <div id="modes">
-            <table id="modesTable">
-                <tr>
-                    <td>
-                        <input type="radio" name="radiosForMode" id="train" value="train" checked>Train
-                    </td>
-                    <td>
-                        <input type="radio" name="radiosForMode" id="beams" value="beams">Beams
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <input type="button" id="calculate" value="Calculate" />
-                    </td>
-                    <td>
-                        <input type="button" id="showGraph" value="Show Graph" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <p>Session name</p>
-                    </td>
-                    <td>
-                        <input list="sessions" id="sessionName"/>
-                        <datalist id="sessions"></datalist>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <input type="button" id="save" value="Save" />
-                    </td>
-                    <td>
-                        <input type="button" id="load" value="Load" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <input type="button" id="clean" value="Clean data" />
-                    </td>
-                    <td>
-                        <input type="button" id="removeSession" value="Remove session" />
-                    </td>
-                </tr>
-            </table>
-        </div>
-        <div id="inputsForTestTrain">
-            <table id="parametersTable">
-                <tr>
-                    <td>
-                        Speed:
-                    </td>
-                    <td>
-                        <input id="speed" type="text"/>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        Breaking Time:
-                    </td>
-                    <td>
-                        <input id="breakingTime" type="text" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        Max load on prop:
-                    </td>
-                    <td>
-                        <input id="maxLoad" type="text" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <input type="button" id="increaseDistance" value="increase distance to prop" />
-                    </td>
-                    <td>
-                        <input type="button" id="decreaseDistance" value="decrease distance to prop" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <input type="radio" name="radiosForValueGraphXAxis" id="speedRadio" value="speed" checked>Speed
-                    </td>
-                    <td>
-                        <input type="radio" name="radiosForValueGraphXAxis" id="timeRadio" value="time">Time
-                    </td>
-                </tr>
-            </table>
-        </div>
-        <div id="inputsForTestBeams">
-
-        </div>
-        <div id="result">
-
-        </div>
-    </div>
-    <div id="drawingBlock">
-        <svg class="svgForDrawing" xmlns="http://www.w3.org/2000/svg" version="1.1"></svg>
     </div>
     <div id="graph"></div>
-    <script src="scripts/Main.js"></script>
-    <script src="scripts/Database.js"></script>
-    <script src="scripts/Point.js"></script>
-    <script src="scripts/Line.js"></script>
-    <script src="scripts/Chart.js"></script>
 </body>
 </html>

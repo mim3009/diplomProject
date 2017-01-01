@@ -1,8 +1,8 @@
-﻿//Web storage, promisses and deffered objects сохранять только то что захочу кнопочка, добавить в create проверку не только на слиентх но и на координаты
+﻿//проверка на количество цветных точек для разных режимов
 
 /*Block for start initialization of elements*/
 var radiosForMode = document.getElementsByName("radiosForMode");
-var mode = undefined;
+var mode = null;
 
 for (let i = 0; i < radiosForMode.length; i++) {
     if (radiosForMode[i].checked) {
@@ -11,8 +11,8 @@ for (let i = 0; i < radiosForMode.length; i++) {
     }
 }
 
-var dataForGraphTrainMode = new Array();
-var dataForGraphBeamsMode = new Array();
+var dataForGraphTrainMode = [];
+var dataForGraphBeamsMode = [];
 var pointsCollection = new Set();
 var linesCollection = new Set();
 var svg = document.getElementsByClassName("svgForDrawing")[0];
@@ -32,9 +32,9 @@ var svgOffset = svg.getBoundingClientRect();
 var s = 0.2;
 var g = 9.80665;
 var borderColors = ["rgba(0, 0, 0, 1)", "rgba(153,255,51,1)", "rgba(255, 0, 51, 1)", "rgba(0, 0, 255, 1)"];
-var valueGraphXAxis = undefined;
+var valueGraphXAxis = null;
 
-//Test variables for visible coordinates output
+//Test variables for visible coordinates output (should be removed with dom elements)
 var xxx = document.getElementById("x");
 var yyy = document.getElementById("y");
 
@@ -66,6 +66,10 @@ var controlButtonTable = document.getElementById("controlButtonTable");
 controlButtonTable.addEventListener("click", tableWithParametersShow);
 
 function tableWithParametersShow() {
+    controlButtonTable.className = "active";
+    if (controlButtonInputs.className === "active") {
+        controlButtonInputs.className = "";
+    }
     let tablePoints = document.getElementById("tables");
     let inputsForTestTrain = document.getElementById("inputsForTestTrain");
     let modes = document.getElementById("modes");
@@ -78,11 +82,19 @@ var controlButtonInputs = document.getElementById("controlButtonInputs");
 controlButtonInputs.addEventListener("click", inputsShow);
 
 function inputsShow() {
+    controlButtonInputs.className = "active";
+    if (controlButtonTable.className === "active") {
+        controlButtonTable.className = "";
+    }
     let tablePoints = document.getElementById("tables");
     let inputsForTestTrain = document.getElementById("inputsForTestTrain");
     let modes = document.getElementById("modes");
     modes.style.display = "block";
     if (mode == "train") {
+        inputsForTestTrain.style.display = "block";
+    }
+    else if (mode == "beams") {
+        inputsForTestTrain.style.visibility = "hidden";
         inputsForTestTrain.style.display = "block";
     }
     tablePoints.style.display = "none";
@@ -103,13 +115,14 @@ function useTrain() {
     mode = trainRadio.value;
     document.getElementById("inputsForTestBeams").style.display = "none";
     document.getElementById("inputsForTestTrain").style.display = "block";
+    document.getElementById("inputsForTestTrain").style.visibility = "visible";
 }
 
 function useBeams() {
     document.getElementsByClassName("svgForDrawing")[0].style.backgroundImage = "url('../images/image2.jpg')";
     mode = beamsRadio.value;
-    document.getElementById("inputsForTestTrain").style.display = "none";
     document.getElementById("inputsForTestBeams").style.display = "block";
+    document.getElementById("inputsForTestTrain").style.visibility = "hidden";
 }
 
 /*End of mode options*/
@@ -147,8 +160,8 @@ function makeCalculations() {
         var speed = Number(document.getElementById("speed").value);
         var time = Number(document.getElementById("breakingTime").value);
         var maxLoadOnProp = Number(document.getElementById("maxLoad").value);
-        var greenProp = undefined;
-        var redProp = undefined;
+        var greenProp = null;
+        var redProp = null;
 
         pointsCollection.forEach(function (value) {
             if (value.getIsProp()) {
@@ -193,10 +206,11 @@ function makeCalculations() {
         }
     }
     else if (mode == "beams") {
-        if(countOfGreenProp == 3 && countOfRedProp == 1){
-            var greenProp = new Array();
-            var redProp = undefined;
-            var grayProp = new Array();
+        if (countOfGreenProp == 3 && countOfRedProp == 1) {
+            dataForGraphBeamsMode = [];
+            var greenProp = [];
+            var redProp = null;
+            var grayProp = [];
 
             pointsCollection.forEach(function (value) {
                 if (value.getIsProp()) {
@@ -232,20 +246,26 @@ function makeCalculations() {
                 }
             }
 
-            var bc = getLineLength(greenProp[1].getPosition().x, greenProp[1].getPosition().y, greenProp[2].getPosition().x, greenProp[2].getPosition().y);
+            var s = getLineLength(greenProp[1].getPosition().x, greenProp[1].getPosition().y, greenProp[2].getPosition().x, greenProp[2].getPosition().y);
+            var l = getLineLength(greenProp[0].getPosition().x, greenProp[0].getPosition().y, grayProp[0].getPosition().x, grayProp[0].getPosition().y);
+            var f1 = redProp.getMass() * g;
 
-            do {
-                greenProp[1].setPosition(greenProp[1].getPosition().x + 1, greenProp[1].getPosition().y);
-                greenProp[2].setPosition(greenProp[2].getPosition().x, greenProp[2].getPosition().y + 1);
-            } while (greenProp[1].getPosition().x < grayProp[0].getPosition().x);
-
-            do {
-                var pressures = calculateBeamsPressure(greenProp, redProp, grayProp, bc);
-                var pressuresAVG = (pressures.grayPropFixingPressure + pressures.greenPropTopPressure + pressures.greenPropBottomPressure) / 3;
-                dataForGraphBeamsMode.push([parseInt(pressures.angle), pressuresAVG, pressures.grayPropFixingPressure, pressures.greenPropTopPressure, pressures.greenPropBottomPressure]);
-                greenProp[1].setPosition(greenProp[1].getPosition().x - 1, greenProp[1].getPosition().y);
-                greenProp[2].setPosition(greenProp[2].getPosition().x, greenProp[2].getPosition().y - 1);
-            } while (greenProp[2].getPosition().y > grayProp[0].getPosition().y);
+            for (var i = 1; i < 90; i++) {
+                var ai = (Math.PI * i) / (2 * 90);
+                var l2 = Math.sin(ai);
+                var l3 = Math.cos(ai);
+                var f2 = l * f1 / l2;
+                var f3 = l * f1 / l3;
+                var fy = (l - l2) * f1 / l2;
+                var fx = l2 * f2 / l3;
+                var fr = Math.sqrt(fy + fx);
+                
+                var pressureOfGreenTopProp = f2 / getSquare(greenProp[1]);
+                var pressureOfGreenBottomProp = f3 / getSquare(greenProp[2]);
+                var pressureOfGrayTopProp = fr / getSquare(grayProp[0]);
+                var avgOfPressures = (pressureOfGreenTopProp + pressureOfGreenBottomProp + pressureOfGrayTopProp) / 3;
+                dataForGraphBeamsMode.push([i, avgOfPressures, pressureOfGrayTopProp, pressureOfGreenTopProp, pressureOfGreenBottomProp]);
+            }
 
         }
         else {
@@ -260,7 +280,7 @@ var graph = document.getElementById("graph");
 displayGraphButton.addEventListener("click", makeGraph, false);
 
 function makeGraph() {
-    var myChart = undefined;
+    var myChart = null;
     if (window.getComputedStyle(graph, null).getPropertyValue("display") == "none") {
         var canvas = document.createElement("canvas");
         canvas.id = "myChart";
@@ -289,7 +309,7 @@ function makeGraph() {
 
 var increaseDistance = document.getElementById("increaseDistance");
 increaseDistance.addEventListener("click", increaseHandler, false);
-//there are no check for white line, if I'll have a time I have to add it
+
 function increaseHandler() {
     pointsCollection.forEach(function (value) {
         if (value.getColor() == "gray") {
@@ -334,8 +354,17 @@ var clean = document.getElementById("clean");
 clean.addEventListener("click", cleanData, false);
 
 function cleanData() {
-    dataForGraphTrainMode = new Array();
-    dataForGraphBeamsMode = new Array();
+    dataForGraphTrainMode = [];
+    dataForGraphBeamsMode = [];
+}
+
+var removeLast = document.getElementById("removeLastResult");
+removeLast.addEventListener("click", removeLastResult, false);
+
+function removeLastResult() {
+    if (mode == "train") {
+        dataForGraphTrainMode.pop();
+    }
 }
 /**/
 
@@ -360,7 +389,7 @@ function getAngle(center, point) {
 */
 
 function findPointByElement(element) {
-    let point = undefined;
+    let point = null;
     pointsCollection.forEach(function (value) {
         if (value.getElement() === element) {
             point = value;
@@ -374,7 +403,7 @@ function findPointByElement(element) {
 */
 
 function findPointByCoordinates(x, y) {
-    let point = undefined;
+    let point = null;
     pointsCollection.forEach(function (value) {
         if (value.getPosition().x === x && value.getPosition().y === y) {
             point = value;
@@ -401,14 +430,14 @@ function findPolygonPointsCorrectPosition(line) {
         y: line.getPoints().secondPoint.getPosition().y - svgOffset.top
     };
     var result = {
-        xa: undefined,
-        xb: undefined,
-        ya: undefined,
-        yb: undefined,
-        xa2: undefined,
-        xb2: undefined,
-        ya2: undefined,
-        yb2: undefined
+        xa: null,
+        xb: null,
+        ya: null,
+        yb: null,
+        xa2: null,
+        xb2: null,
+        ya2: null,
+        yb2: null
     };
     var e = center.x - point.x;
     var c = center.y - point.y;
@@ -536,41 +565,11 @@ function findQuantativeCharacteristic(speed, breakingTime, maxLoadOnProp, speedD
     return n;
 }
 
-function calculateBeamsPressure(greenProp, redProp, grayProp, bc) {
-    
-    var greenPropWithMass = greenProp[0];
-    var greenPropTop = greenProp[1];
-    var greenPropBottom = greenProp[2];
-    var grayPropFixing = grayProp[0];
-    var grayPropBottom = grayProp[grayProp.length - 1];
+/**
+    Function returns the circle square
+*/
 
-    //returned object
-    var pressures = {
-        angle: undefined,
-        greenPropTopPressure: undefined,
-        greenPropBottomPressure: undefined,
-        grayPropFixingPressure: undefined,
-    };
-
-    var angle = 360 - getAngle(greenProp[2].getPosition(), greenProp[1].getPosition());
-    var s2 = greenPropTop.getRadius() * 10;
-    var s3 = greenPropBottom.getRadius();
-    var s4 = grayPropFixing.getRadius() / 10;
-    var l = getLineLength(greenPropWithMass.getPosition().x, greenPropWithMass.getPosition().y, grayPropFixing.getPosition().x, grayPropFixing.getPosition().y);
-    var l2 = getLineLength(greenPropTop.getPosition().x, greenPropTop.getPosition().y, grayPropFixing.getPosition().x, grayPropFixing.getPosition().y);
-    var l3 = getLineLength(greenPropBottom.getPosition().x, greenPropBottom.getPosition().y, grayPropFixing.getPosition().x, grayPropFixing.getPosition().y);
-    var f1 = redProp.getMass() * g;
-    var f2 = l * f1 / l2;
-    var f3 = l * f1 / l3;
-    var fy = (l - l2) * f1 / l2;
-    var fx = l2 * f2 / l3;
-    var fr = Math.sqrt(fy + fx);
-
-    pressures.angle = angle;
-    pressures.greenPropTopPressure = f2 / s2;
-    pressures.greenPropBottomPressure = f3 / s3;
-    pressures.grayPropFixingPressure = fr / s4;
-    
-    return pressures;
+function getSquare(point){
+    return Math.PI * Math.pow(point.getRadius(), 2);
 }
 /*End of common functions block*/
