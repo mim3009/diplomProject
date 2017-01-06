@@ -198,11 +198,11 @@ function makeCalculations() {
 
             }
             else {
-                console.log("speed or time are not defined");
+                alert("speed or time are not defined");
             }
         }
         else {
-            console.log("greenProp or redProp or maxLoad are not defined or there are too many green or red points");
+            alert("greenProp or redProp or maxLoad are not defined or there are too many green or red points");
         }
     }
     else if (mode == "beams") {
@@ -224,27 +224,11 @@ function makeCalculations() {
                 }
             });
 
-            //sorting the array to get points sequince from very left to very right
-            for (var i = 0; i < greenProp.length - 1; i++) {
-                for (var j = 0; j < greenProp.length - 1; j++) {
-                    if (greenProp[j].getPosition().x > greenProp[j + 1].getPosition().x) {
-                        var tmp = greenProp[j];
-                        greenProp[j] = greenProp[j + 1];
-                        greenProp[j + 1] = tmp;
-                    }
-                }
-            }
+            //sorting the array to get points sequince from the very left to the very right
+            greenProp.sort((a, b) => a.getPosition().x - b.getPosition().x);
 
             //sorting the array to get points sequince from very top to very bottom
-            for (var i = 0; i < grayProp.length - 1; i++) {
-                for (var j = 0; j < grayProp.length - 1; j++) {
-                    if (grayProp[j].getPosition().y > grayProp[j + 1].getPosition().y) {
-                        var tmp = grayProp[j];
-                        grayProp[j] = grayProp[j + 1];
-                        grayProp[j + 1] = tmp;
-                    }
-                }
-            }
+            grayProp.sort((a, b) => a.getPosition().y - b.getPosition().y);
 
             var s = getLineLength(greenProp[1].getPosition().x, greenProp[1].getPosition().y, greenProp[2].getPosition().x, greenProp[2].getPosition().y);
             var l = getLineLength(greenProp[0].getPosition().x, greenProp[0].getPosition().y, grayProp[0].getPosition().x, grayProp[0].getPosition().y);
@@ -269,7 +253,7 @@ function makeCalculations() {
 
         }
         else {
-            console.log("countOfGreenProp != 3, countOfRedProp != 1");
+            alert("countOfGreenProp != 3, countOfRedProp != 1");
         }
     }
 }
@@ -293,6 +277,23 @@ function makeGraph() {
             drawGraph(data.label, dataset);
         }
         else if (mode == "beams") {
+            let avgOfPressures = [];
+
+            for(let i = 0; i < dataForGraphBeamsMode.length; i++){
+                avgOfPressures[i] = dataForGraphBeamsMode[i][1];
+            }
+
+            var minValue = Math.min(...avgOfPressures);
+            let avgAngle = null;
+
+            for (let i = 0; i < dataForGraphBeamsMode.length; i++) {
+                if(dataForGraphBeamsMode[i][1] == minValue){
+                    avgAngle = dataForGraphBeamsMode[i][0];
+                    break;
+                }
+            }
+
+            console.log(avgAngle);
             var data = convertParametersForGraph(dataForGraphBeamsMode);
             var dataset = convertDataToDataset(data);
             drawGraph(data.label, dataset);
@@ -356,6 +357,8 @@ clean.addEventListener("click", cleanData, false);
 function cleanData() {
     dataForGraphTrainMode = [];
     dataForGraphBeamsMode = [];
+    pointsCollection.forEach(item => item.delete());
+    linesCollection.forEach(item => item.delete());
 }
 
 var removeLast = document.getElementById("removeLastResult");
@@ -508,7 +511,7 @@ function drawGraph(labelsForX, dataSet) {
 }
 
 /**
-    Function for parameters convertation from the array to the object. First parameter of the array must be an labels, the following parameters will be parsed as pressure
+    Function for parameters convertation from the array to the object. First parameter of the array must be labels, the following parameters will be parsed as a pressure
 */
 
 function convertParametersForGraph(data) {

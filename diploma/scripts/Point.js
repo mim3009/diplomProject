@@ -57,9 +57,7 @@
             row.cells[0].innerHTML = position.x;
             row.cells[1].innerHTML = position.y;
         }
-        this.getBindedLines().forEach(function (line) {
-            line.setCoordinates(line.getPoints().firstPoint.getPosition().x, line.getPoints().firstPoint.getPosition().y, line.getPoints().secondPoint.getPosition().x, line.getPoints().secondPoint.getPosition().y);
-        });
+        this.getBindedLines().forEach(line => line.setCoordinates(line.getPoints().firstPoint.getPosition().x, line.getPoints().firstPoint.getPosition().y, line.getPoints().secondPoint.getPosition().x, line.getPoints().secondPoint.getPosition().y));
     }
 
     this.getElement = function () {
@@ -173,9 +171,7 @@ Point.prototype.delete = function () {
     var row = this.getRow();
     row.parentNode.removeChild(row);
     document.body.removeChild(this.getElement());
-    this.getBindedLines().forEach(function (line) {
-        line.delete();
-    });
+    this.getBindedLines().forEach(line => line.delete());
     delete this;
 }
 
@@ -261,7 +257,7 @@ Point.prototype.drag = function () {
     var fixedLine = null;
     var lengthOfFixedLine = null;
 
-    pointContext.getBindedLines().forEach(function (line) {
+    pointContext.getBindedLines().forEach(line => {
         if (line.getIsFixed()) {
             fixedLine = line;
             lengthOfFixedLine = fixedLine.getLength();

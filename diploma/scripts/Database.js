@@ -33,15 +33,8 @@ function readDataFromDB() {
 
     request.onsuccess = function (event) {
         if (request.result) {
-
-            pointsCollection.forEach(function (item) {
-                item.delete();
-            });
-
-            linesCollection.forEach(function (item) {
-                item.delete();
-            });
-
+            pointsCollection.forEach(item => item.delete());
+            linesCollection.forEach(item => item.delete());
             finalResult = (JSON.parse(request.result.objectCollection));
             dataForGraphTrainMode = finalResult.dataTM;
             dataForGraphBeamsMode = finalResult.dataBM;
@@ -129,13 +122,8 @@ function saveSessionTODB() {
         radiosForValueGraphXAxisActiveValue: radiosForValueGraphXAxisActive
     };
 
-    pointsCollection.forEach(function (point) {
-        points.push([point.getRadius(), point.getMass(), point.getColor(), point.getPosition()]);
-    });
-
-    linesCollection.forEach(function (line) {
-        lines.push([line.getCoordinates(), line.getColor()]);
-    });
+    pointsCollection.forEach(point => points.push([point.getRadius(), point.getMass(), point.getColor(), point.getPosition()]));
+    linesCollection.forEach(line => lines.push([line.getCoordinates(), line.getColor()]));
 
     var allObjects = {
         dataTM: dataForGraphTrainMode,
@@ -144,7 +132,6 @@ function saveSessionTODB() {
         allLines: lines,
         otherData: additionalData
     };
-
 
     var request = db.transaction("objectCollection", "readwrite")
     .objectStore("objectCollection")
