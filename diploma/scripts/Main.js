@@ -369,6 +369,34 @@ function removeLastResult() {
         dataForGraphTrainMode.pop();
     }
 }
+
+var tables = document.getElementById("pointsTable");
+tables.addEventListener("click", tableOnClickTDDelegate, false);
+
+function tableOnClickTDDelegate() {
+    var target = window.event.target;
+
+    while (target != this) {
+        if (target.tagName == 'TR') {
+            var rowOriginalColor = target.style.backgroundColor;
+            var xCoordinate = target.childNodes[0].innerHTML;
+            var yCoordinate = target.childNodes[1].innerHTML;
+            var element = document.elementFromPoint(xCoordinate, yCoordinate);
+            var pointOriginalColor = element.style.backgroundColor;
+            target.style.backgroundColor = "blue";
+            element.style.backgroundColor = "brown";
+            setTimeout(changeColorBack, 500);
+
+            function changeColorBack() {
+                target.style.backgroundColor = rowOriginalColor;
+                element.style.backgroundColor = pointOriginalColor;
+            }
+            
+            return;
+        }
+        target = target.parentNode;
+    }
+}
 /**/
 
 /*Block for common functions*/
